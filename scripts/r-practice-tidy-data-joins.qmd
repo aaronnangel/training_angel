@@ -1,0 +1,21 @@
+---
+title: "R Practice: Tidy Data and Joins"
+format: html
+---
+
+```{r}
+library(readr)
+library(dplyr)
+library(lubridate) # for bonus question
+
+```
+**Quick question:** Do you get a message after loading the libraries? What is it telling you? Talk to your neighbor about it or write a note in your qmd.  
+*specified functions above are masked from base & stats packages*
+
+## Data source
+Ecological and social Interactions in urban parks: bird surveys in local parks in the central Arizona-Phoenix metropolitan area 
+```{r}
+read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+
+
