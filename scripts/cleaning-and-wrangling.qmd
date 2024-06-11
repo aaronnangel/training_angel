@@ -1,0 +1,181 @@
+---
+title: "Data Wrangling"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+## Data sources
+```{r}
+catch_original <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+```
+## Explore data
+```{r}
+# prints the column names
+colnames(catch_original)
+
+#preview the first 6 lines
+head(catch_original)
+
+# summary of each column
+summary(catch_original)
+
+# unique values in each column
+unique(catch_original$Region)
+
+# open data frame
+# View(catch_original)
+
+```
+
+## Clean and reshaping
+```{r}
+
+```
+
+
+### Using select() 
+```{r}
+catch_data <- catch_original %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+head(catch_data)
+
+```
+```{r}
+catch_data <- catch_original %>% 
+  # drop the All and notes columns
+  select(-All, -notesRegCode)
+```
+
+### Quality check
+```{r}
+dplyr::glimpse(catch_data)
+```
+### Changeing column content using mutate()
+```{r}
+catch_clean <- catch_data %>% 
+  # change column type to numeric
+  mutate(Chinook = as.numeric(Chinook))
+
+head(catch_clean)
+```
+
+```{r}
+i <- which(is.na(catch_clean$Chinook))
+i
+```
+```{r}
+catch_data[i,]
+```
+```{r}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = if_else(Chinook == "I", "1", Chinook), 
+         Chinook = as.numeric(Chinook))
+
+catch_clean[i,]
+
+```
+### Changing shape
+```{r}
+catch_long <- catch_clean %>% 
+  # pivot longer all columns except region and year
+  pivot_longer(
+    cols = -c(Region, Year),
+    names_to = "Species",
+    values_to = "Catch"
+  )
+
+head(catch_long)
+```
+```{r}
+catch_wide <- catch_long %>% 
+  # pivot wider to make more salmon columns
+  pivot_wider(names_from = Species,
+              values_from = Catch)
+
+head(catch_wide)
+```
+### Renaming columns
+```{r}
+catch_long <- catch_long %>% 
+  rename(catch_thousands = Catch)
+
+head(catch_long)
+```
+### Adding columns
+```{r}
+catch_long <- catch_long %>% 
+  mutate(Catch = catch_thousands * 1000) %>% 
+  # drop the old column
+  select(-catch_thousands)
+
+head(catch_long)
+```
+### Summary statistics
+```{r}
+unique(catch_original$Region)
+```
+```{r}
+# split-apply-combine
+mean_region <- catch_long %>% 
+  # split
+  group_by(Region) %>% 
+  # apply is the mean() & combine is the mean_region result
+  summarize(mean_catch = mean(Catch))
+
+head(mean_region)
+```
+### Filter rows
+```{r}
+# filter rows for SSE region
+sse_catch <- catch_long %>% 
+  filter(Region == "SSE")
+
+head(sse_catch)
+```
+```{r}
+# filter for catch greater than 1 M
+catch_millions <- catch_long %>% 
+  filter(Catch > 1000000)
+
+head(catch_millions)
+
+chinook_sse <- catch_long %>% 
+  # filter for SSE & Chinook
+  filter(Region == "SSE" & Species == "Chinook")
+
+sse_nse <- catch_long %>% 
+  # filter to sse OR nse
+  filter(Region == "SSE" | Region == "NSE")
+
+```
+### Sort your data
+```{r}
+
+#ascending
+#arrange(column)
+#or 
+# decending 
+#arrange(desc(column))
+```
+
+### split and unite
+```{r}
+# example data
+sites_df <- data.frame(site = c("HAW-101",
+                                "HAW-103",
+                                "OAH-320",
+                                "OAH-219",
+                                "MAU-039"))
+
+sites_df %>% 
+  separate(site, c("island", "site_number"), "-")
+# calling out arguments within code makes it more clear; especially for sharing..
+```
+
+
+
