@@ -3,3 +3,7 @@
 .Rdata
 .httr-oauth
 .DS_Store
+
+#ignore plots and data folders
+plots/
+data/
